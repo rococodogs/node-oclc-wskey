@@ -1,0 +1,18 @@
+{
+  "name": "oclc-wskey",
+  "version": "1.0.0",
+  "description": "Construct a WSKey for use with OCLC services",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "tape": "^4.0.0"
+  },
+  "scripts": {
+    "test": "node test"
+  },
+  "keywords": [
+    "OCLC", "WSKey", "WorldCat", "WMS", "authentication"
+  ],
+  "author": "Adam Malantonio <adam.malantonio@gmail.com>",
+  "license": "MIT"
+}
