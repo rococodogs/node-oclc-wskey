@@ -5,13 +5,24 @@ function WSKey (key, secret, options) {
 
     this.key = key;
     this.secret = secret;
-    this.opt = options;
+    this.opt = options || {};
 
+    this.addUser(this.opt.user);
+    
     this.time = this.nonce = null;
+}
+
+WSKey.prototype.addUser = function(user) {
+    this.user = (user && user.principalID && user.principalIDNS) ? user : {};
+}
+
+WSKey.prototype.hasUser = function() {
+    return this.user && this.user.principalID && this.user.principalIDNS;
 }
 
 WSKey.prototype.HMACSignature = function (method, url, options) {
     var options = options || this.opt || {}
+      , user = options.user
       , norm = this._normalizeRequest(method, url, options)
       , sig
       ;
@@ -23,9 +34,9 @@ WSKey.prototype.HMACSignature = function (method, url, options) {
         + ' signature="' + this._createHMACDigest(norm) + '"'
         ;
 
-    if ( options.user && options.user.principalID && options.user.principalIDNS ) {
-      sig += ', principalID="' + options.user.principalID + '"'
-          +  ', principalIDNS="' + options.user.principalIDNS + '"'
+    if ( user ) {
+      sig += ', principalID="' + user.principalID + '"'
+          +  ', principalIDNS="' + user.principalIDNS + '"'
           ;
     }
 
