@@ -1,6 +1,6 @@
 {
   "name": "oclc-wskey",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Construct a WSKey for use with OCLC services",
   "main": "index.js",
   "dependencies": {},
@@ -13,6 +13,14 @@
   "keywords": [
     "OCLC", "WSKey", "WorldCat", "WMS", "authentication"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/malantonio/node-oclc-wskey"
+  },
+  "bugs": {
+    "url": "https://github.com/malantonio/node-oclc-wskey/issues"
+  },
+  "homepage": "https://github.com/malantonio/node-oclc-wskey",
   "author": "Adam Malantonio <adam.malantonio@gmail.com>",
   "license": "MIT"
 }
