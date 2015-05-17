@@ -23,7 +23,7 @@ WSKey.prototype.HMACSignature = function (method, url, options) {
         + ' signature="' + this._createHMACDigest(norm) + '"'
         ;
 
-    if ( options.user ) {
+    if ( options.user && options.user.principalID && options.user.principalIDNS ) {
       sig += ', principalID="' + options.user.principalID + '"'
           +  ', principalIDNS="' + options.user.principalIDNS + '"'
           ;
