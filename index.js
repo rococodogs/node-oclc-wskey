@@ -31,7 +31,7 @@ WSKey.prototype.HMACSignature = function (method, url, options) {
         + ' clientId="' + this.key + '",'
         + ' timestamp="' + this.time + '",'
         + ' nonce="' + this.nonce + '",'
-        + ' signature="' + this._createHMACDigest(norm) + '"'
+        + ' signature="' + createHMACDigest(norm, this.secret) + '"'
         ;
 
     if ( user ) {
@@ -45,23 +45,6 @@ WSKey.prototype.HMACSignature = function (method, url, options) {
     return sig;
 }
 
-WSKey.prototype._createHMACDigest = function (normalized) {
-    var crypto = require('crypto')
-      , hmac = crypto.createHmac('sha256', this.secret)
-      ;
-
-    hmac.update(normalized);
-    return hmac.digest('base64');
-};
-
-WSKey.prototype._createNonce = function () {
-    return Math.ceil(
-            (new Date()).getMilliseconds() 
-            * Math.random() 
-            * 1000000
-           );
-}
-
 WSKey.prototype._normalizeRequest = function (method, reqUrl, options) {
     var url = require('url')
       , parsedSigUrl = url.parse('https://www.oclc.org/wskey')
@@ -72,7 +55,7 @@ WSKey.prototype._normalizeRequest = function (method, reqUrl, options) {
       
       , options = options || this.opt || {}
       , time = options._debug ? options._debug.time : (new Date()).getTime().toString().substr(0, 10)
-      , nonce = options._debug ? options._debug.nonce : this._createNonce()
+      , nonce = options._debug ? options._debug.nonce : createNonce()
       , bodyHash = options._debug ? options._debug.bodyHash : (options.bodyHash || '')
 
       , query, normalized
@@ -100,4 +83,21 @@ WSKey.prototype._normalizeRequest = function (method, reqUrl, options) {
     if ( query ) normalized.push(query);
 
     return normalized.join('\n') + '\n';
+}
+
+function createHMACDigest(normalized, secret) {
+    var crypto = require('crypto')
+      , hmac = crypto.createHmac('sha256', secret)
+      ;
+
+    hmac.update(normalized);
+    return hmac.digest('base64');
+};
+
+function createNonce () {
+    return Math.ceil(
+            (new Date()).getMilliseconds() 
+            * Math.random() 
+            * 1000000
+           );
 }
