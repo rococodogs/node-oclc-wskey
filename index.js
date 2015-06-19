@@ -1,29 +1,104 @@
 module.exports = WSKey;
 
-function WSKey (key, secret, options) {
-    if ( !(this instanceof WSKey) ) return new WSKey(key, secret, options);
+function WSKey (key, secret, user) {
+    if ( !(this instanceof WSKey) ) return new WSKey(key, secret, user);
 
     this.key = key;
     this.secret = secret;
-    this.opt = options || {};
-
-    this.addUser(this.opt.user);
+    
+    this.addUser(user)
     
     this.time = this.nonce = null;
 }
 
 WSKey.prototype.addUser = function(user) {
-    this.user = (user && user.principalID && user.principalIDNS) ? user : {};
+    this.user = isUser(user) ? user : {};
 }
 
 WSKey.prototype.hasUser = function() {
-    return this.user && this.user.principalID && this.user.principalIDNS;
+    return isUser(this.user);
 }
 
-WSKey.prototype.HMACSignature = function (method, url, options) {
-    var options = options || this.opt || {}
-      , user = options.user
-      , norm = this._normalizeRequest(method, url, options)
+WSKey.prototype.removeUser = function() {
+    this.user = {}
+}
+
+WSKey.prototype.requestAccessToken = function(authInstID, contextInstID, user, scope, cb) {
+  var request = require('request');
+  var opts = {};
+
+  // variation 1: authInstID is contextInstID
+  // requestAccessToken(authInstId, user, scope, cb)
+  if (typeof scope === 'function') {
+    cb = scope
+    scope = user
+    user = contextInstID
+    contextInstID = authInstID
+  }
+
+  // variation 2: authInstID is contextInstID + no user specified
+  // requestAccessToken(authInstId, scope, cb)
+  else if ( typeof user === 'function' ) {
+    cb = user;
+    scope = contextInstID;
+    contextInstID = authInstID;
+    user = this.user;
+  }
+
+  // variation 3: opts object + callback
+  // requestAccessToken({ ... }, cb );
+  else if ( typeof authInstID === 'object' ) {
+    opts = authInstID;
+    cb = typeof contextInstID === 'function' ? contextInstID : noop;
+    authInstID = opts.authenticatingInstitutionID || opts.contextInstitutionID;
+    contextInstID = opts.contextInstitutionID || authInstID;
+    scope = opts.scope || [];
+    user = opts.user || this.user || {};
+  } 
+
+  if ( typeof scope === 'string' ) scope = [scope]
+
+  var url, tokenResponse;
+
+  url = 'https://authn.sd00.worldcat.org/oauth2/accessToken?grant_type=client_credentials'
+      + '&authenticatingInstitutionId=' + authInstID
+      + '&contextInstitutionId=' + contextInstID
+      + '&scope=' + scope.join(' ')
+      ;
+
+  request.post(
+    url, 
+    { 
+      headers: { 
+        'Authorization': this.HMACSignature('POST', url),
+        'Accept': 'application/json' 
+      }
+    },
+    function(err, resp, body) {
+      if (err) return cb(err, null);
+
+      body = JSON.parse(body);
+
+      if (body.code) return cb(Error(body.message), null);
+      
+      return cb(err, body, 'Bearer: ' + body.access_token);
+    })
+}
+
+WSKey.prototype.HMACSignature = function (method, url, user, _debug) {
+    // lousy check for debug vs. user
+    if ( !_debug ) {
+      if ( isUser(user) ) {
+        _debug = {};
+      } else {
+        _debug = user;
+        user = null;
+      }
+    }
+
+    if ( !user && this.hasUser() ) user = this.user;
+
+    var norm = this._normalizeRequest(method, url, _debug || {})
       , sig
       ;
 
@@ -45,7 +120,7 @@ WSKey.prototype.HMACSignature = function (method, url, options) {
     return sig;
 }
 
-WSKey.prototype._normalizeRequest = function (method, reqUrl, options) {
+WSKey.prototype._normalizeRequest = function (method, reqUrl, _debug) {
     var url = require('url')
       , parsedSigUrl = url.parse('https://www.oclc.org/wskey')
       , parsedReqUrl = url.parse(reqUrl)
@@ -53,10 +128,10 @@ WSKey.prototype._normalizeRequest = function (method, reqUrl, options) {
 
       , sigPort = parsedSigUrl.protocol === 'https:' ? 443 : 80
       
-      , options = options || this.opt || {}
-      , time = options._debug ? options._debug.time : (new Date()).getTime().toString().substr(0, 10)
-      , nonce = options._debug ? options._debug.nonce : createNonce()
-      , bodyHash = options._debug ? options._debug.bodyHash : (options.bodyHash || '')
+      , _debug = _debug || {}
+      , time = _debug.time || (new Date()).getTime().toString().substr(0, 10)
+      , nonce = _debug.nonce || createNonce()
+      , bodyHash = _debug.bodyHash || ''
 
       , query, normalized
       ;
@@ -94,10 +169,19 @@ function createHMACDigest(normalized, secret) {
     return hmac.digest('base64');
 };
 
-function createNonce () {
+function createNonce() {
     return Math.ceil(
             (new Date()).getMilliseconds() 
             * Math.random() 
             * 1000000
            );
 }
+
+function isUser(user) {
+  if ( user === undefined ) return false;
+  if ( typeof user !== 'object' ) return false;
+  if ( !user.principalID || !user.principalIDNS ) return false;
+  return true;
+}
+
+function noop() {}
