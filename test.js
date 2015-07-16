@@ -64,12 +64,9 @@ if ( process.env.WSKEY && process.env.WSKEY_SECRET && process.env.INST && proces
       , scope = process.env.SCOPE.split(',')
       ;
 
-    wk.requestAccessToken({
-      authenticatingInstitutionID: authInstID,
-      scope: scope
-    }, function(err, resp, auth) {
-      t.ok(err === null)
-      t.ok(auth.match(/^Bearer/))
+    wk.requestAccessToken(authInstID, scope, function(err, resp, auth) {
+      t.ok(err === null, 'no error returned')
+      t.ok(auth.match(/^Bearer/), 'Bearer header passed to callback')
       t.end()
     });
   });
