@@ -30,19 +30,13 @@ WSKey.prototype.requestAccessToken = function(authInstID, contextInstID, user, s
   // variation 1: authInstID is contextInstID
   // requestAccessToken(authInstId, user, scope, cb)
   if (typeof scope === 'function') {
-    cb = scope
-    scope = user
-    user = contextInstID
-    contextInstID = authInstID
+    return this.requestAccessToken(authInstId, authInstId, contextInstID, user, scope);
   }
 
   // variation 2: authInstID is contextInstID + no user specified
   // requestAccessToken(authInstId, scope, cb)
   else if ( typeof user === 'function' ) {
-    cb = user;
-    scope = contextInstID;
-    contextInstID = authInstID;
-    user = this.user;
+    return this.requestAccessToken(authInstID, authInstID, this.user, contextInstID, user)
   }
 
   // variation 3: opts object + callback
