@@ -1,45 +1,62 @@
 # node-oclc-wskey
 
-Module to construct a [WebService Key](http://www.oclc.org/developer/develop/authentication/what-is-a-wskey.en.html) 
-for use with OCLC services.
+Module to construct a [WebService Key][wskey] for use with OCLC services.
 
-## var key = new WSKey(key, secret, options)
+```
+npm install oclc-wskey
+```
 
-Returns a WSKey instance object. `options` can be an object with the keys:
+## usage
 
-### `user`
+### var key = new WSKey('key', 'secret' /*, user */)
 
-An object with `principalID` and `principalIDNS` keys. 
+Where `user` is an object with the keys `principalID` and `principalIDNS`.
+Depending on what you're planning, you may not need to provide a one.
 
-### `_debug`
+You can also pass an object as the sole parameter. Use these keys:
 
-An object with `time` (posix timestamp), `nonce`, and `bodyHash` keys. Since OCLC does not currently use a `bodyHash`, 
-this can be left out.
+key            | value
+---------------|----------------
+`key`          | the public key
+`secret`       | the secret key
+`user`         | an object with `principalID` and `principalIDNS` keys
+`redirect_uri` | redirect uri associated with the key
+`scope`        | an array of scopes associated with the key
 
+`redirect_uri` and `scope` have no bearing on this module's only function
+(`key.HMACSignature`), but are necessary for [generating Access Tokens][access-token].
 
-## key.HMACSignature(requestMethod, url, options)
+### var sig = key.HMACSignature(method, uri /*, user */)
 
-Generates the [HMAC Signature](http://www.oclc.org/developer/develop/authentication/hmac-signature.en.html) header needed
-for authorization with most OCLC services. 
+Returns an HMAC signature for `method` and `uri`. Uses the instantiated user by
+default, but can be overridden with a different user.
 
-## Example
+## example
 
 ```
 var WSKey = require('oclc-wskey')
-  , request = require('request')
-  , me = { principalID: 'principalID', principalIDNS: 'principalIDNS' }
-  , key = new WSKey('wskey', 'secret', { user: me })
-  , url = 'https://circ.sd00.worldcat.org/LHR?q=oclc:656296916'
-  , headers = {
-        'Authorization': key.HMACSignature('GET', url),
-        'Accept': 'application/json'
-    }
-  ;
+var https = require('https')
+var url = require('url')
+var me = { principalID: 'principalID', principalIDNS: 'principalIDNS' }
+var key = new WSKey('wskey', 'secret', me)
+var addr = url.parse('https://circ.sd00.worldcat.org/LHR?q=oclc:656296916')
 
-request.get(url, { 'headers': headers }, function(err, response, body) {
-    console.log(body);
+var opts = {
+  hostname: addr.hostname,
+  path: addr.path,
+  headers: {
+    'Authorization': key.HMACSignature('GET', url.format(addr)),
+    'Accept': 'application/json'
+  }
+}
+
+https.get(opts, function (res) {
+  res.pipe(process.stdout)
 })
 ```
 
-## License
+## license
 MIT
+
+[wskey]: http://www.oclc.org/developer/develop/authentication/what-is-a-wskey.en.html
+[access-token]: https://github.com/malantonio/node-oclc-access-token
