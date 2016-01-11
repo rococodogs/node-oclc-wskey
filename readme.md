@@ -1,5 +1,7 @@
 # node-oclc-wskey
 
+[![build status](https://secure.travis-ci.org/malantonio/node-oclc-wskey.png)](https://travis-ci.org/malantonio/node-oclc-wskey)
+
 Module to construct a [WebService Key][wskey] for use with OCLC services.
 
 ```
