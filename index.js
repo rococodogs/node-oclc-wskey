@@ -19,7 +19,7 @@ function WSKey (key, secret, user) {
     this.key = opts.key
     this.secret = opts.secret
     this.redirect_uri = opts.redirect_uri
-    this.scope = (opts.scope || '').split(' ')
+    this.scope = Array.isArray(opts.scope) ? opts.scope : (opts.scope || '').split(' ')
     this.user = opts.user
   } else {
     this.key = key

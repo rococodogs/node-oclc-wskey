@@ -30,3 +30,25 @@ test('new user gets passed to HMAC sig', function(t) {
     t.ok(header.indexOf('principalIDNS="wvu"') > -1, "new user\'s principalIDNS is in header")
     t.end()
 })
+
+test('scope works with array + string', function (t) {
+  var scope_arr = ['WMS_NCIP', 'WMS_CIRCULATION']
+  var scope_str = scope_arr.join(' ')
+  var opt = {
+    key: 'key',
+    secret: 'secret',
+    user: user,
+    scope: scope_arr
+  }
+
+  var key_a = new WSKey(opt)
+
+  t.deepEqual(key_a.scope, scope_arr, 'array is passed as is')
+
+  opt['scope'] = scope_str
+
+  var key_b = new WSKey(opt)
+
+  t.deepEqual(key_b.scope, scope_arr, 'string is split into array')
+  t.end()
+})
