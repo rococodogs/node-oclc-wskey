@@ -19,23 +19,45 @@ function WSKey (key, secret, user) {
     this.key = opts.key
     this.secret = opts.secret
     this.redirect_uri = opts.redirect_uri
-    this.scope = Array.isArray(opts.scope) ? opts.scope : (opts.scope || '').split(' ')
     this.user = opts.user
+
+    if (Array.isArray(opts.scope))
+      this.scope = opts.scope
+    else if (typeof opts.scope === 'string' && opts.scope !== '')
+      this.scope = opts.scope.split(' ')
+    else
+      this.scope = []
+
   } else {
     this.key = key
     this.secret = secret
     this.user = user
+    this.scope = []
   }
 }
 
-WSKey.prototype.HMACSignature = function (method, url, user, _debug) {
+WSKey.prototype.HMACSignature = function (method, url, user, opts) {
+  if (!opts) opts = {}
+
+  var time = opts.time || (new Date()).getTime().toString().substr(0, 10)
+  var nonce = opts.nonce || createNonce()
+
   if (!user) user = this.user
 
-  var norm = normalizeRequest(this.key, method, url, _debug)
+  var normopts = {
+    time: time,
+    nonce: nonce,
+    bodyHash: opts.bodyHash || '',
+    method: method,
+    url: url,
+    key: this.key
+  }
+
+  var norm = normalizeRequest(normopts)
   var sig = 'http://www.worldcat.org/wskey/v2/hmac/v1'
           + ' clientId="' + this.key + '",'
-          + ' timestamp="' + this.time + '",'
-          + ' nonce="' + this.nonce + '",'
+          + ' timestamp="' + time + '",'
+          + ' nonce="' + nonce + '",'
           + ' signature="' + createHMACDigest(norm, this.secret) + '"'
 
   if (user.principalID && user.principalIDNS) {
@@ -46,27 +68,26 @@ WSKey.prototype.HMACSignature = function (method, url, user, _debug) {
   return sig;
 }
 
-function normalizeRequest (key, method, reqUrl, debug) {
+function normalizeRequest (opts) {
   var url = require('url')
   var parsedSigUrl = url.parse('https://www.oclc.org/wskey')
-  var parsedReqUrl = url.parse(reqUrl)
+  var parsedReqUrl = url.parse(opts.url)
   var qs = parsedReqUrl.query
   var sigPort = parsedSigUrl.protocol === 'https:' ? 443 : 80
-  var _debug = debug || {}
-  var time = _debug.time || (new Date()).getTime().toString().substr(0, 10)
-  var nonce = _debug.nonce || createNonce()
-  var bodyHash = _debug.bodyHash || ''
+  var time = opts.time
+  var nonce = opts.nonce
+  var bodyHash = opts.bodyHash
   var query
 
   if (qs)
     query = qs.split('&').sort().join('\n')
 
   var normalized = [
-    key,
+    opts.key,
     time,
     nonce,
     bodyHash,
-    method.toUpperCase(),
+    opts.method.toUpperCase(),
     parsedSigUrl.host,
     sigPort,
     parsedSigUrl.path
