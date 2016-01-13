@@ -10,7 +10,7 @@ npm install oclc-wskey
 
 ## usage
 
-### var key = new WSKey('key', 'secret' /*, user */)
+### `var key = new WSKey(key, secret /*, user */)`
 
 Where `user` is an object with the keys `principalID` and `principalIDNS`.
 Depending on what you're planning, you may not need to provide a one.
@@ -28,14 +28,14 @@ key            | value
 `redirect_uri` and `scope` have no bearing on this module's only function
 (`key.HMACSignature`), but are necessary for [generating Access Tokens][access-token].
 
-### var sig = key.HMACSignature(method, uri /*, user */)
+### `var sig = key.HMACSignature(method, uri /*, user */)`
 
 Returns an HMAC signature for `method` and `uri`. Uses the instantiated user by
 default, but can be overridden with a different user.
 
 ## example
 
-```
+```javascript
 var WSKey = require('oclc-wskey')
 var https = require('https')
 var url = require('url')
