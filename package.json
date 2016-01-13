@@ -1,6 +1,6 @@
 {
   "name": "oclc-wskey",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Construct a WSKey for use with OCLC services",
   "main": "index.js",
   "dependencies": {},
