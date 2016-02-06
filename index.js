@@ -4,22 +4,12 @@ function WSKey (key, secret, user) {
   if ( !(this instanceof WSKey) ) return new WSKey(key, secret, user);
   var opts = {}
 
-  Object.defineProperty(this, 'user', {
-    get: function () { return this._user },
-    set: function (u) {
-      if (!u) u = {}
-      if (!u.principalID || !u.principalIDNS) u = {}
-
-      this._user = u
-    }
-  })
-
   if (typeof key === 'object') {
     opts = key
     this.key = opts.key
     this.secret = opts.secret
     this.redirect_uri = opts.redirect_uri
-    this.user = opts.user
+    this.user = opts.user || {}
 
     if (Array.isArray(opts.scope))
       this.scope = opts.scope
@@ -31,7 +21,7 @@ function WSKey (key, secret, user) {
   } else {
     this.key = key
     this.secret = secret
-    this.user = user
+    this.user = user || {}
     this.scope = []
   }
 }
