@@ -1,6 +1,6 @@
 {
   "name": "oclc-wskey",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "Construct a WSKey for use with OCLC services",
   "main": "index.js",
   "dependencies": {},
@@ -11,7 +11,11 @@
     "test": "node test"
   },
   "keywords": [
-    "OCLC", "WSKey", "WorldCat", "WMS", "authentication"
+    "OCLC",
+    "WSKey",
+    "WorldCat",
+    "WMS",
+    "authentication"
   ],
   "repository": {
     "type": "git",
