@@ -102,3 +102,23 @@ test('new user gets passed to HMAC sig', function (t) {
     t.ok(header.indexOf('principalIDNS="wvu"') > -1, 'principalIDNS is in header')
     t.end()
 })
+
+test('public exists + key alias works', function (t) {
+  var key1 = new WSKey({public: 'abc123', secret: 'shhh'})
+  var key2 = new WSKey({key: 'abc123', secret: 'shhh'})
+  var newKey = 'new public key'
+
+  t.deepEqual(key1, key2)
+
+  key1.public = newKey
+
+  t.equal(key1.public, newKey)
+  t.equal(key1.key, newKey)
+
+  key2.key = newKey
+
+  t.equal(key2.public, newKey)
+  t.equal(key2.key, newKey)
+
+  t.end()
+})

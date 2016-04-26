@@ -1,12 +1,12 @@
 module.exports = WSKey;
 
-function WSKey (key, secret, user) {
-  if ( !(this instanceof WSKey) ) return new WSKey(key, secret, user);
+function WSKey (pub, secret, user) {
+  if ( !(this instanceof WSKey) ) return new WSKey(pub, secret, user);
   var opts = {}
 
-  if (typeof key === 'object') {
-    opts = key
-    this.key = opts.key
+  if (typeof pub === 'object') {
+    opts = pub
+    this.public = opts.public || opts.key
     this.secret = opts.secret
     this.redirect_uri = opts.redirect_uri
     this.user = opts.user || {}
@@ -19,11 +19,17 @@ function WSKey (key, secret, user) {
       this.scope = []
 
   } else {
-    this.key = key
+    this.public = pub
     this.secret = secret
     this.user = user || {}
     this.scope = []
   }
+
+  // add `key.key` alias
+  Object.defineProperty(this, 'key', {
+    get: function () { return this.public },
+    set: function (val) { this.public = val }
+  })
 }
 
 WSKey.prototype.HMACSignature = function (method, url, user, opts) {
@@ -40,12 +46,12 @@ WSKey.prototype.HMACSignature = function (method, url, user, opts) {
     bodyHash: opts.bodyHash || '',
     method: method,
     url: url,
-    key: this.key
+    key: this.public
   }
 
   var norm = normalizeRequest(normopts)
   var sig = 'http://www.worldcat.org/wskey/v2/hmac/v1'
-          + ' clientId="' + this.key + '",'
+          + ' clientId="' + this.public + '",'
           + ' timestamp="' + time + '",'
           + ' nonce="' + nonce + '",'
           + ' signature="' + createHMACDigest(norm, this.secret) + '"'

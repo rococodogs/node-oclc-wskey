@@ -10,7 +10,7 @@ npm install oclc-wskey
 
 ## usage
 
-### `var key = new WSKey(key, secret /*, user */)`
+### `var key = new WSKey(publicKey, secret /*, user */)`
 
 Where `user` is an object with the keys `principalID` and `principalIDNS`.
 Depending on what you're planning, you may not need to provide a one.
@@ -19,7 +19,7 @@ You can also pass an object as the sole parameter. Use these keys:
 
 key            | value
 ---------------|----------------
-`key`          | the public key
+`public`       | the public key
 `secret`       | the secret key
 `user`         | an object with `principalID` and `principalIDNS` keys
 `redirect_uri` | redirect uri associated with the key
@@ -58,6 +58,7 @@ https.get(opts, function (res) {
 ```
 
 ## license
+
 MIT
 
 [wskey]: http://www.oclc.org/developer/develop/authentication/what-is-a-wskey.en.html
