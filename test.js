@@ -122,3 +122,17 @@ test('public exists + key alias works', function (t) {
 
   t.end()
 })
+
+test('attempting HMAC signature without public and/or secret key throws', function (t) {
+  var keys = [new WSKey('abc123'), new WSKey, new WSKey]
+
+  keys[1].secret = 'shhh'
+
+  t.plan(keys.length)
+
+  keys.forEach(function (key) {
+    t.throws(function () {
+      key.HMACSignature('GET', url)
+    })
+  })
+})

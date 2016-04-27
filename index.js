@@ -1,7 +1,8 @@
 module.exports = WSKey;
 
 function WSKey (pub, secret, user) {
-  if ( !(this instanceof WSKey) ) return new WSKey(pub, secret, user);
+  if ( !(this instanceof WSKey) ) return new WSKey(pub, secret, user)
+
   var opts = {}
 
   if (typeof pub === 'object') {
@@ -33,6 +34,8 @@ function WSKey (pub, secret, user) {
 }
 
 WSKey.prototype.HMACSignature = function (method, url, user, opts) {
+  if (!this.public || !this.secret) throw Error('HMACSignature requires a public and secret key set')
+
   if (!opts) opts = {}
 
   var time = opts.time || (new Date()).getTime().toString().substr(0, 10)
